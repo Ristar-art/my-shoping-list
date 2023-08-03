@@ -1,0 +1,13 @@
+POST http://localhost:8000/api/login
+Content-Type: application/json
+
+{
+        "name": "Boiketlo",
+        "password": "123456789"
+        
+}
+###
+
+GET http://localhost:8000/api/user-data
+Authorization: Berrer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NGNiNmJiZGJjYTMwNDI4MWVjOWUwY2EiLCJlbWFpbCI6Im1vY2hvY2hva29ib2lrZXRsb0BnbWFpbC5jb20iLCJpYXQiOjE2OTEwNzIwOTV9.n0nqR044PXqVvbiXcEZsQh_KHbgYmmduRx5mmkBKiKs
+

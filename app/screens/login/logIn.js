@@ -40,16 +40,29 @@ export default function LogIn({ navigation }) {
   };
 
   async function handleLogin() {
-    // Your login logic here
+    const response = await fetch('http://localhost:8000/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        password,
+      }),
+    });
 
-    // For demonstration purposes, I'm just setting a dummy isLoggedIn value to true after login
-    const isLoggedIn = true;
-
-    if (isLoggedIn) {
-      alert('Login successful');
-      navigation.navigate('Home'); // Navigate to Home page after successful login
-    } else {
-      alert('Please check your username and password');
+    try {
+      const data = await response.json();
+      if (data.user) {
+        alert('Login successful');
+        navigation.navigate('List', { accessToken: data.accessToken }); // Pass accessToken as a parameter
+       
+      } else {
+        alert('Please check your username and password');
+      }
+    } catch (error) {
+      console.error('Error parsing API response:', error);
+      alert('An error occurred while logging in. Please try again later.');
     }
   }
 

@@ -1,63 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { ImageBackground, StyleSheet, View, Dimensions, Text, FlatList, TextInput, TouchableOpacity } from 'react-native';
-import CustomButton from '../../components/customButtons/customButtons';
-import CustomComponent from '../../components/customComponrnts/customComponents';
+import { ImageBackground, StyleSheet, View, Dimensions, Text, TouchableOpacity } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
-const image = {  
+const image = {
   uri: 'https://images.pexels.com/photos/5875032/pexels-photo-5875032.jpeg?auto=compress&cs=tinysrgb&w=1600',
 };
 
-export default function Home({ navigation }) {
-  const [shoppingList, setShoppingList] = useState([]);
-  const [item, setItem] = useState('');
+const CustomButton = ({ text, onPress }) => (
+  <TouchableOpacity style={styles.button} onPress={onPress}>
+    <Text style={styles.buttonText}>{text}</Text>
+  </TouchableOpacity>
+);
 
+const CustomComponent = ({ text }) => (
+  <View style={styles.component}>
+    <Text style={styles.componentText}>{text}</Text>
+  </View>
+);
+
+export default function Home({ navigation }) {
   const onSignInPressed = () => {
-    // validate user
+    // Navigate to the login screen
     navigation.navigate('LogIn');
   };
 
-  const addItemToList = () => {
-    if (item.trim() !== '') {
-      setShoppingList([...shoppingList, item.trim()]);
-      setItem('');
+  useEffect(() => {
+    // Fetch the access token from storage (or wherever you store it after login)
+    const storedAccessToken = 'YOUR_STORED_ACCESS_TOKEN';
+    if (!storedAccessToken) {
+      // If the access token is not available, navigate to the login screen
+      navigation.navigate('LogIn');
     }
-  };
-
-  const deleteItemFromList = (index) => {
-    const updatedList = shoppingList.filter((_, i) => i !== index);
-    setShoppingList(updatedList);
-  };
+  }, []);
 
   return (
     <View style={styles.container}>
       <ImageBackground source={image} resizeMode="cover" style={styles.image}>
         <View style={styles.main}>
           <CustomComponent text="Support us by buying the merchandise" />
-          <CustomButton text="Get Started" onPress={onSignInPressed} />
-        </View>
-        <View style={styles.shoppingListContainer}>
-          <Text style={styles.shoppingListHeader}>Shopping List:</Text>
-          <FlatList
-            data={shoppingList}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item, index }) => (
-              <View style={styles.shoppingListItemContainer}>
-                <Text style={styles.shoppingListItem}>{item}</Text>
-                <TouchableOpacity onPress={() => deleteItemFromList(index)}>
-                  <Text style={styles.deleteButton}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Enter an item..."
-            value={item}
-            onChangeText={setItem}
-            onSubmitEditing={addItemToList}
-          />
+          <CustomButton text="Sign in" onPress={onSignInPressed} />
         </View>
       </ImageBackground>
     </View>
@@ -77,37 +59,24 @@ const styles = StyleSheet.create({
     maxWidth: 960,
     marginHorizontal: 'auto',
   },
-  shoppingListContainer: {
-    flex: 1,
+  component: {
     padding: 16,
-    width: '100%',
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    marginBottom: 8,
   },
-  shoppingListHeader: {
+  componentText: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
-  shoppingListItemContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  shoppingListItem: {
-    fontSize: 16,
-  },
-  deleteButton: {
-    color: 'red',
-    fontSize: 16,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
+  button: {
+    backgroundColor: 'blue',
+    padding: 16,
     borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 8,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: 'white',
+    textAlign: 'center',
   },
   image: {
     flex: 1,
