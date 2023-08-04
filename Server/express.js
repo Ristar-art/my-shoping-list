@@ -1,4 +1,3 @@
-// Add this at the beginning of your code to load environment variables from .env file
 require("dotenv").config();
 
 const express = require('express');
@@ -38,8 +37,8 @@ app.post('/api/add-item', authenticateToken, async (req, res) => {
 
 app.delete('/api/delete-item/:itemId', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId; // Get the user ID from the token payload
-    const userData = await UserData.findById(userId); // Fetch the user data by ID
+    const userId = req.user.userId; 
+    const userData = await UserData.findById(userId); 
     if (!userData) {
       return res.status(404).json({ status: 'error', message: 'User data not found' });
     }
@@ -64,7 +63,6 @@ app.delete('/api/delete-item/:itemId', authenticateToken, async (req, res) => {
 });
 
 
-// Endpoint to get all data of the user
 app.get('/api/user-data', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId; // Get the user ID from the token payload
