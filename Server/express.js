@@ -36,6 +36,34 @@ app.post('/api/add-item', authenticateToken, async (req, res) => {
   }
 });
 
+app.delete('/api/delete-item/:itemId', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId; // Get the user ID from the token payload
+    const userData = await UserData.findById(userId); // Fetch the user data by ID
+    if (!userData) {
+      return res.status(404).json({ status: 'error', message: 'User data not found' });
+    }
+
+    const itemId = req.params.itemId; // Get the item ID from the request params
+
+    // Find the index of the item in the shopping list
+    const itemIndex = userData.shoppingList.indexOf(itemId);
+     console.log('list-item',itemId)
+    if (itemIndex === -1) {
+      return res.status(404).json({ status: 'error', message: 'Item not found in the shopping list' });
+    }
+
+    // Remove the item from the shopping list array
+    userData.shoppingList.splice(itemIndex, 1);
+    await userData.save();
+
+    return res.json({ status: 'ok', message: 'Item deleted successfully', data: userData });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to delete item' });
+  }
+});
+
+
 // Endpoint to get all data of the user
 app.get('/api/user-data', authenticateToken, async (req, res) => {
   try {

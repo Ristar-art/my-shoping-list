@@ -34,27 +34,61 @@ const List = ({ route }) => {
   const renderItem = ({ item }) => (
     <View style={styles.item}>
       <Text style={styles.text}>{item}</Text>
+      <TouchableOpacity style={styles.deleteButton} onPress={() => deleteItem(item)}>
+        <Text style={styles.deleteButtonText}>Delete</Text>
+      </TouchableOpacity>
     </View>
   );
 
-  const addItem = async () => {
+  
+const addItem = async () => {
+  try {
+    if (!newItem.trim()) {
+     alert('Item cannot be empty');
+      return;
+    }
+
+    if (/[\\/]/.test(newItem)) {
+      alert('Item cannot contain / or \\ characters');
+      return;
+    }
+
+    const response = await fetch('http://localhost:8000/api/add-item', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        item: newItem,
+      }),
+    });
+
+    if (response.ok) {
+      fetchData(); // Fetch the updated data after adding the item
+      setNewItem(''); // Clear the input field after adding the item
+    } else {
+      alert('Failed to add item');
+    }
+  } catch (error) {
+   alert('Failed to connect to the server');
+  }
+};
+  
+
+  const deleteItem = async (item) => {
     try {
-      const response = await fetch('http://localhost:8000/api/add-item', {
-        method: 'POST',
+      const response = await fetch(`http://localhost:8000/api/delete-item/${item}`, {
+        method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          item: newItem,
-        }),
       });
 
       if (response.ok) {
-        fetchData(); // Fetch the updated data after adding the item
-        setNewItem(''); // Clear the input field after adding the item
+        fetchData(); // Fetch the updated data after deleting the item
       } else {
-        console.error('Failed to add item');
+        console.error('Failed to delete item');
       }
     } catch (error) {
       console.error('Failed to connect to the server');
@@ -91,6 +125,9 @@ const styles = StyleSheet.create({
     padding: 20,
     marginVertical: 8,
     borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   text: {
     fontSize: 16,
@@ -112,6 +149,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  deleteButton: {
+    backgroundColor: 'red',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  deleteButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
