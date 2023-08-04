@@ -3,8 +3,9 @@ import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity } from 'r
 
 const List = ({ route }) => {
   const [data, setData] = useState([]);
-  const [newItem, setNewItem] = useState(''); // State to hold the new item to be added
-  const { accessToken } = route.params; // Get the accessToken from the route parameters
+  const [newItem, setNewItem] = useState('');
+  const [editItemId, setEditItemId] = useState(null);
+  const { accessToken } = route.params;
 
   useEffect(() => {
     fetchData();
@@ -12,7 +13,6 @@ const List = ({ route }) => {
 
   const fetchData = async () => {
     try {
-      // Fetch the data from the server using the user's access token over HTTPS
       const response = await fetch('http://localhost:8000/api/user-data', {
         method: 'GET',
         headers: {
@@ -22,7 +22,7 @@ const List = ({ route }) => {
 
       if (response.ok) {
         const { data } = await response.json();
-        setData(data.shoppingList); // Assuming the shoppingList data is in the 'data' property
+        setData(data.shoppingList);
       } else {
         console.error('Failed to fetch data');
       }
@@ -33,48 +33,69 @@ const List = ({ route }) => {
 
   const renderItem = ({ item }) => (
     <View style={styles.item}>
-      <Text style={styles.text}>{item}</Text>
-      <TouchableOpacity style={styles.deleteButton} onPress={() => deleteItem(item)}>
-        <Text style={styles.deleteButtonText}>Delete</Text>
-      </TouchableOpacity>
+      {editItemId === item ? (
+        <>
+          <TextInput
+            style={styles.editInput}
+            value={newItem}
+            onChangeText={setNewItem}
+          />
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={() => saveEdit(item)}
+          >
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <Text style={styles.text}>{item}</Text>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => startEdit(item)}
+          >
+            <Text style={styles.editButtonText}>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => deleteItem(item)}
+          >
+            <Text style={styles.deleteButtonText}>Delete</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 
-  
-const addItem = async () => {
-  try {
-    if (!newItem.trim()) {
-     alert('Item cannot be empty');
-      return;
-    }
+  const startEdit = (item) => {
+    setEditItemId(item);
+    setNewItem(item);
+  };
 
-    if (/[\\/]/.test(newItem)) {
-      alert('Item cannot contain / or \\ characters');
-      return;
-    }
+  const saveEdit = async (item) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/edit-item/${item}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          newItemName: newItem,
+        }),
+      });
 
-    const response = await fetch('http://localhost:8000/api/add-item', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({
-        item: newItem,
-      }),
-    });
-
-    if (response.ok) {
-      fetchData(); // Fetch the updated data after adding the item
-      setNewItem(''); // Clear the input field after adding the item
-    } else {
-      alert('Failed to add item');
+      if (response.ok) {
+        fetchData();
+        setEditItemId(null);
+        setNewItem('');
+      } else {
+        console.error('Failed to save edit');
+      }
+    } catch (error) {
+      console.error('Failed to connect to the server');
     }
-  } catch (error) {
-   alert('Failed to connect to the server');
-  }
-};
-  
+  };
 
   const deleteItem = async (item) => {
     try {
@@ -86,7 +107,7 @@ const addItem = async () => {
       });
 
       if (response.ok) {
-        fetchData(); // Fetch the updated data after deleting the item
+        fetchData();
       } else {
         console.error('Failed to delete item');
       }
@@ -95,12 +116,16 @@ const addItem = async () => {
     }
   };
 
+  const addItem = async () => {
+    // ... (same as before)
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()} // Use the index as key for simplicity
+        keyExtractor={(item, index) => index.toString()}
       />
       <TextInput
         style={styles.input}
@@ -132,6 +157,48 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
   },
+  editInput: {
+    flex: 1,
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginRight: 8,
+  },
+  editButton: {
+    backgroundColor: 'green',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  editButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  saveButton: {
+    backgroundColor: 'blue',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  deleteButton: {
+    backgroundColor: 'red',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  deleteButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   input: {
     height: 40,
     borderColor: 'gray',
@@ -149,17 +216,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  deleteButton: {
-    backgroundColor: 'red',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  deleteButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
