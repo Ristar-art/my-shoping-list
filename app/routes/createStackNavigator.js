@@ -1,6 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import LogIn from '../screens/login/logIn'; // Make sure the path is correct
+import LogIn from '../screens/login/logIn'; 
 import Home from '../screens/home/home';
 import SignUp from '../screens/signUp/signUp';
 import List from '../screens/list/list';

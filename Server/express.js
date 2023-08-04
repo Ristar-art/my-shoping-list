@@ -43,7 +43,7 @@ app.delete('/api/delete-item/:itemId', authenticateToken, async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'User data not found' });
     }
 
-    const itemId = req.params.itemId; // Get the item ID from the request params
+    const itemId = req.params.itemId; 
 
     // Find the index of the item in the shopping list
     const itemIndex = userData.shoppingList.indexOf(itemId);

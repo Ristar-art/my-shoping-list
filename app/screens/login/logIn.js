@@ -55,7 +55,7 @@ export default function LogIn({ navigation }) {
       const data = await response.json();
       if (data.user) {
         alert('Login successful');
-        navigation.navigate('List', { accessToken: data.accessToken }); // Pass accessToken as a parameter
+        navigation.navigate('List', { accessToken: data.accessToken }); 
        
       } else {
         alert('Please check your username and password');
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   button: {
-    backgroundColor: 'blue', // Change the color as per your requirement
+    backgroundColor: 'blue', 
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -118,16 +118,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    color: 'white', // Change the text color as per your requirement
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
   tertiaryButton: {
     backgroundColor: 'transparent',
-    borderColor: 'blue', // Change the border color as per your requirement
+    borderColor: 'blue', 
     borderWidth: 2,
   },
   tertiaryText: {
-    color: 'blue', // Change the text color for tertiary button
+    color: 'blue', 
   },
 });

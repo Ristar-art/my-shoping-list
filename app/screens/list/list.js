@@ -117,7 +117,37 @@ const List = ({ route }) => {
   };
 
   const addItem = async () => {
-    // ... (same as before)
+    try {
+      if (!newItem.trim()) {
+       alert('Item cannot be empty');
+        return;
+      }
+  
+      if (/[\\/]/.test(newItem)) {
+        alert('Item cannot contain / or \\ characters');
+        return;
+      }
+  
+      const response = await fetch('http://localhost:8000/api/add-item', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          item: newItem,
+        }),
+      });
+  
+      if (response.ok) {
+        fetchData(); // Fetch the updated data after adding the item
+        setNewItem(''); // Clear the input field after adding the item
+      } else {
+        alert('Failed to add item');
+      }
+    } catch (error) {
+     alert('Failed to connect to the server');
+    }
   };
 
   return (
