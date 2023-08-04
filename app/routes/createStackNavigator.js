@@ -10,11 +10,10 @@ const Stack = createStackNavigator();
 const AppNavigator = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Home" component={Home} />
-      <Stack.Screen name="LogIn" component={LogIn} />
-      <Stack.Screen name="SignUp" component={SignUp} />
-      <Stack.Screen name="List" component={List} />   
-      
+      <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
+      <Stack.Screen name="LogIn" component={LogIn} options={{ headerShown: false }} />
+      <Stack.Screen name="SignUp" component={SignUp} options={{ headerShown: false }} />
+      <Stack.Screen name="List" component={List} options={{ headerShown: false }} />        
     </Stack.Navigator>
   );
 };
