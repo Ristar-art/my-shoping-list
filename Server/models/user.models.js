@@ -5,7 +5,10 @@ const User = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     passwordRepeat: { type: String, required: true },
-    shoppingList: { type: [String], default: [] },
+    shoppingList: [{
+        name: { type: String, required: true },
+        amount: { type: String, required: true },
+    }],
 },
 { collection: 'user-data' }
 )

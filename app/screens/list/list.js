@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
 
+
+const image = {
+  uri: 'https://images.pexels.com/photos/5875032/pexels-photo-5875032.jpeg?auto=compress&cs=tinysrgb&w=1600',
+};
 const List = ({ route }) => {
   const [data, setData] = useState([]);
-  const [newItem, setNewItem] = useState('');
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemAmount, setNewItemAmount] = useState('');
   const [editItemId, setEditItemId] = useState(null);
   const { accessToken } = route.params;
 
@@ -13,7 +18,7 @@ const List = ({ route }) => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/user-data', {
+      const response = await fetch('http://192.168.1.19:8000/api/user-data', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -33,62 +38,68 @@ const List = ({ route }) => {
 
   const renderItem = ({ item }) => (
     <View style={styles.item}>
-      {editItemId === item ? (
+      {editItemId === item._id ? (
         <>
           <TextInput
             style={styles.editInput}
-            value={newItem}
-            onChangeText={setNewItem}
+            value={newItemName}
+            onChangeText={setNewItemName}
+          />
+          <TextInput
+            style={styles.amountText}
+            value={newItemAmount}
+            onChangeText={setNewItemAmount}
           />
           <TouchableOpacity
             style={styles.saveButton}
-            onPress={() => saveEdit(item)}
+            onPress={() => saveEdit(item._id)}
           >
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
         </>
       ) : (
         <>
-          <Text style={styles.text}>{item}</Text>
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => startEdit(item)}
-          >
-            <Text style={styles.editButtonText}>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => deleteItem(item)}
-          >
-            <Text style={styles.deleteButtonText}>Delete</Text>
-          </TouchableOpacity>
+          <Text style={styles.text}>{item.name}</Text>
+          <Text style={styles.text}>{item.amount}</Text>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => deleteItem(item._id)}>
+              <Text style={styles.deleteButtonText}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.editButton} onPress={() => startEdit(item._id)}>
+              <Text style={styles.editButtonText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </View>
   );
 
-  const startEdit = (item) => {
-    setEditItemId(item);
-    setNewItem(item);
+  const startEdit = (itemId) => {
+    const selectedItem = data.find(item => item._id === itemId);
+    setEditItemId(itemId);
+    setNewItemName(selectedItem.name);
+    setNewItemAmount(selectedItem.amount);
   };
 
-  const saveEdit = async (item) => {
+  const saveEdit = async (itemId) => { 
     try {
-      const response = await fetch(`http://localhost:8000/api/edit-item/${item}`, {
+      const response = await fetch(`http://192.168.1.19:8000/api/edit-item/${itemId}`,  {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          newItemName: newItem,
+          newItemName: newItemName,
+          newItemAmount: newItemAmount,
         }),
       });
 
       if (response.ok) {
         fetchData();
         setEditItemId(null);
-        setNewItem('');
+        setNewItemName('');
+        setNewItemAmount('');
       } else {
         console.error('Failed to save edit');
       }
@@ -97,9 +108,9 @@ const List = ({ route }) => {
     }
   };
 
-  const deleteItem = async (item) => {
+  const deleteItem = async (itemId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/delete-item/${item}`, {
+      const response = await fetch(`http://192.168.1.19:8000/api/delete-item/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -118,55 +129,74 @@ const List = ({ route }) => {
 
   const addItem = async () => {
     try {
-      if (!newItem.trim()) {
-       alert('Item cannot be empty');
+      if (!newItemName.trim() || !newItemAmount.trim()) {
+        alert('Item name and amount cannot be empty');
         return;
       }
-  
-      if (/[\\/]/.test(newItem)) {
-        alert('Item cannot contain / or \\ characters');
+
+      if (/[\\/]/.test(newItemName) || /[\\/]/.test(newItemAmount)) {
+        alert('Item name and amount cannot contain / or \\ characters');
         return;
       }
-  
-      const response = await fetch('http://localhost:8000/api/add-item', {
+
+      const response = await fetch('http://192.168.1.19:8000/api/add-item', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          item: newItem,
+          itemName: newItemName,
+          itemAmount: newItemAmount,
         }),
       });
-  
+
       if (response.ok) {
-        fetchData(); // Fetch the updated data after adding the item
-        setNewItem(''); // Clear the input field after adding the item
+        fetchData();
+        setNewItemName('');
+        setNewItemAmount('');
       } else {
         alert('Failed to add item');
       }
     } catch (error) {
-     alert('Failed to connect to the server');
+      alert('Failed to connect to the server');
     }
   };
 
   return (
+    <View>
+<ImageBackground source={image} resizeMode="cover" style={styles.image}>
     <View style={styles.container}>
+     
+     
       <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Enter new item"
-        value={newItem}
-        onChangeText={setNewItem}
-      />
+  data={data}
+  renderItem={renderItem}
+  keyExtractor={(item, index) => index.toString()}
+/>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Name"
+          value={newItemName}
+          onChangeText={setNewItemName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Quantity"
+          value={newItemAmount}
+          onChangeText={setNewItemAmount}
+        />
+      </View>
       <TouchableOpacity style={styles.addButton} onPress={addItem}>
         <Text style={styles.addButtonText}>Add Item</Text>
       </TouchableOpacity>
+      </View>
+      </ImageBackground>
+    
     </View>
+   
   );
 };
 
@@ -176,7 +206,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   item: {
-    backgroundColor: '#f9c2ff',
+    backgroundColor: 'white',
     padding: 20,
     marginVertical: 8,
     borderRadius: 8,
@@ -196,21 +226,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginRight: 8,
   },
-  editButton: {
-    backgroundColor: 'green',
+  buttonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  deleteButton: {
+    backgroundColor: 'transparent',
     paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 6,
     borderRadius: 8,
+    right: 3,
+    position: 'absolute',
+    zIndex: 2,
+  },
+  deleteButtonText: {
+    color: 'red',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  editButton: {
+    backgroundColor: 'transparent',
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 8,
+    right: 65,
+    position: 'absolute',
+    zIndex: 2,
   },
   editButtonText: {
-    color: 'white',
+    color: 'green',
     fontSize: 16,
     fontWeight: 'bold',
   },
   saveButton: {
     backgroundColor: 'blue',
     paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 6,
     borderRadius: 8,
   },
   saveButtonText: {
@@ -218,24 +269,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  deleteButton: {
-    backgroundColor: 'red',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  deleteButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+  inputContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
   },
   input: {
+    flex: 1,
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    marginBottom: 16,
+    marginRight: 8,
   },
   addButton: {
     backgroundColor: 'blue',
@@ -249,6 +294,14 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  amountText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    alignSelf: 'flex-end', 
+    position: 'absolute',
+   
   },
 });
 

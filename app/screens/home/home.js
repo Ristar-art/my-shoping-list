@@ -26,7 +26,7 @@ export default function Home({ navigation }) {
   };
 
   useEffect(() => {
-    // Fetch the access token from storage (or wherever you store it after login)
+    
     const storedAccessToken = 'YOUR_STORED_ACCESS_TOKEN';
     if (!storedAccessToken) {
       // If the access token is not available, navigate to the login screen

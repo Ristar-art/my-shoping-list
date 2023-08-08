@@ -25,8 +25,11 @@ app.post('/api/add-item', authenticateToken, async (req, res) => {
       return res.status(404).json({ status: 'error', message: 'User data not found' });
     }
 
+    // Extract the item name and amount from the request body
+    const { itemName, itemAmount } = req.body;
+
     // Add the item to the shoppingList array in the user data
-    userData.shoppingList.push(req.body.item);
+    userData.shoppingList.push({ name: itemName, amount: itemAmount });
     await userData.save();
 
     return res.json({ status: 'ok', message: 'Item added successfully', data: userData });
@@ -46,8 +49,8 @@ app.delete('/api/delete-item/:itemId', authenticateToken, async (req, res) => {
     const itemId = req.params.itemId; 
 
     // Find the index of the item in the shopping list
-    const itemIndex = userData.shoppingList.indexOf(itemId);
-     console.log('list-item',itemId)
+    const itemIndex = userData.shoppingList.findIndex(item => item._id.toString() === itemId);
+
     if (itemIndex === -1) {
       return res.status(404).json({ status: 'error', message: 'Item not found in the shopping list' });
     }
@@ -64,32 +67,23 @@ app.delete('/api/delete-item/:itemId', authenticateToken, async (req, res) => {
 
 app.put('/api/edit-item/:itemId', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId; // Get the user ID from the token payload
-    const userData = await UserData.findById(userId); // Fetch the user data by ID
-
+    const userId = req.user.userId; 
+    const userData = await UserData.findById(userId); 
     if (!userData) {
       return res.status(404).json({ status: 'error', message: 'User data not found' });
     }
 
-    const itemId = req.params.itemId; // Get the item ID from the request params
+    const itemId = req.params.itemId; 
+    const { newItemName, newItemAmount } = req.body;
 
-    // Find the index of the item in the shopping list
-    const itemIndex = userData.shoppingList.findIndex((item) => item === itemId);
+    const itemIndex = userData.shoppingList.findIndex(item => item._id.toString() === itemId);
 
     if (itemIndex === -1) {
       return res.status(404).json({ status: 'error', message: 'Item not found in the shopping list' });
     }
 
-    // Get the new item name from the request body
-    const newItemName = req.body.newItemName;
-
-    // Check if the new item name is empty or contains invalid characters
-    if (!newItemName.trim() || /[\\/]/.test(newItemName)) {
-      return res.status(400).json({ status: 'error', message: 'Invalid item name' });
-    }
-
-    // Update the item name with the new name
-    userData.shoppingList[itemIndex] = newItemName;
+    userData.shoppingList[itemIndex].name = newItemName;
+    userData.shoppingList[itemIndex].amount = newItemAmount;
     await userData.save();
 
     return res.json({ status: 'ok', message: 'Item updated successfully', data: userData });
@@ -98,12 +92,10 @@ app.put('/api/edit-item/:itemId', authenticateToken, async (req, res) => {
   }
 });
 
-
 app.get('/api/user-data', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId; // Get the user ID from the token payload
-    const userData = await UserData.findById(userId); // Fetch the user data by ID
-
+    const userId = req.user.userId; 
+    const userData = await UserData.findById(userId); 
     if (!userData) {
       return res.status(404).json({ status: 'error', message: 'User data not found' });
     }
@@ -125,7 +117,7 @@ app.post('/api/signup', async (req, res) => {
 
     res.json({ status: 'ok' });
   } catch (err) {
-    res.json({ status: 'error', error: 'Duplicated email' });
+    res.json({ status: 'error', error: 'Duplicated email'});
   }
 });
 
